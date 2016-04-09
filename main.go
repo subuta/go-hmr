@@ -1,44 +1,18 @@
+// code borrowed from https://github.com/antage/eventsource
 package main
 
 import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/standard"
 	"github.com/labstack/echo/middleware"
-	"gopkg.in/antage/eventsource.v1"
+  "gopkg.in/antage/eventsource.v1"
 	"net/http"
   "os/exec"
   "fmt"
-	//"strconv"
-	//"time"
+  "time"
 )
 
 func main() {
-
-	es := eventsource.New(
-		eventsource.DefaultSettings(),
-		func(req *http.Request) [][]byte {
-			return [][]byte{
-				[]byte("X-Accel-Buffering: no"),
-				[]byte("Access-Control-Allow-Origin: *"),
-			}
-		},
-	)
-
-	es.SendEventMessage("tick", "tick-event", "test")
-
-	//defer es.Close()
-	//
-	//http.Handle("/events", es)
-	//go func() {
-	//	id := 1
-	//	for {
-	//		es.SendEventMessage("tick", "tick-event", strconv.Itoa(id))
-	//		id++
-	//		time.Sleep(2 * time.Second)
-	//	}
-	//}()
-	//
-	//log.Fatal(http.ListenAndServe(":8080", nil))
 
 	e := echo.New()
 
@@ -46,7 +20,26 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
+  es := eventsource.New(
+    eventsource.DefaultSettings(),
+    func(req *http.Request) [][]byte {
+      return [][]byte{
+        []byte("Access-Control-Allow-Origin: *"),
+        []byte("Content-Type: text/event-stream"),
+        []byte("Cache-Control: no-cache"),
+        []byte("Connection: keep-alive"),
+      }
+    },
+  )
+  defer es.Close()
+
+  es.SendRetryMessage(3 * time.Second)
+
+  // use server sent events
+  e.Get("/events", standard.WrapHandler(es))
+
   // endpoint for build
+  counter := 1
 	e.Get("/build", func(c echo.Context) error {
     out, err := exec.Command("npm", "run", "build").CombinedOutput()
     if err != nil {
@@ -54,7 +47,10 @@ func main() {
       fmt.Println(errorMessage)
       return c.String(http.StatusInternalServerError, errorMessage)
     }
-		return c.String(http.StatusOK, string(out))
+
+    es.SendEventMessage("success", "message", fmt.Sprintf("%d", counter))
+    counter++;
+    return c.String(http.StatusOK, string(out))
 	})
 
   fmt.Println("start web server at 8080")
