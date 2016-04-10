@@ -1,37 +1,49 @@
-import { dom, element } from 'decca'
-import _ from 'lodash'
-import configureStore from 'store'
-import CounterContainer from 'containers/Counter';
+import rebuildScriptNode from './rebuildScriptNode';
+import _ from 'lodash';
+require('es6-promise').polyfill();
+require('isomorphic-fetch');
 
-const BUILD_EVENT = 'build';
+// subscribe for events
+var eventSource = new EventSource("/events")
 
-let store = configureStore()
-
-let unSubscriber = _.noop;
-
-// Create an app that can turn vnodes into real DOM elements
-var render = dom.createRenderer(document.querySelector('#view'), store.dispatch)
-
-// Listen for the build event that will published by sdk.
-document.body.addEventListener(BUILD_EVENT, function (e) {
-  console.log('client/index.js [start]');
-
-  // if not yet componentRepository registered
-  if (!window.componentRepository) return false;
-
-  const { Counter } = window.componentRepository;
-  const WCounter = CounterContainer(Counter);
-
-  // retrieve latest app and render it.
-  const update = function () {
-    render(<WCounter/>, store.getState())
-    console.log('client/index.js [update]');
+// custom endpoint should implement this method.
+window.onLoadComponentRepository = (func) => {
+  if (!window.componentRepositoryLoadListeners) {
+    window.componentRepositoryLoadListeners = [];
   }
+  window.componentRepositoryLoadListeners.push(func);
+}
 
-  unSubscriber()
-  unSubscriber = store.subscribe(update)
+const loadComponentRepository = (uniqueId = '') => {
+  console.log('loadComponentRepository [start]');
 
-  // render initial state.
-  update()
-  console.log('client/index.js [end]');
-}, false);
+  const scriptUrl = `/js/bundle.component-repository.js?_=${uniqueId}`
+  // add script to dom.
+  return rebuildScriptNode('#dynamic-script', scriptUrl).then((result) => {
+    // when fully loaded.
+    // trigger event for listener(client).
+    _.each(window.componentRepositoryLoadListeners, listener => {
+      listener(result);
+    })
+    console.log('loadComponentRepository [end]');
+  })
+}
+
+eventSource.onmessage = function (ev) {
+  const data = ev.data;
+  if (data === 'built') {
+    console.log('component updated.')
+    loadComponentRepository(ev.lastEventId)
+  }
+};
+
+eventSource.onopen = function (ev) {
+  console.log('eventSource is open.')
+}
+
+eventSource.onerror = function (ev) {
+  console.log("readyState = " + ev.currentTarget.readyState)
+}
+
+// load once.
+loadComponentRepository()
