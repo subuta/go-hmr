@@ -5,12 +5,10 @@
   "main": "index.js",
   "scripts": {
     "serve": "go run main.go & npm run watch",
-
     "watch": "npm run watch-example & npm run watch-client & npm run watch-component",
     "watch-example": "NODE_PATH=$NODE_PATH:example watchify example -d -t babelify -o public/js/bundle.example.js",
     "watch-component": "watchify component-repository  -d -t babelify -o public/js/bundle.component-repository.js",
     "watch-client": "watchify client -d -t babelify -o public/js/bundle.client.js",
-
     "build": "npm run build-example & npm run build-client & npm run build-component",
     "build-example": "NODE_PATH=$NODE_PATH:example browserify example -d -t babelify -o public/js/bundle.example.js",
     "build-component": "browserify component-repository  -d -t babelify -o public/js/bundle.component-repository.js",
@@ -27,6 +25,7 @@
   },
   "homepage": "https://github.com/subuta/go-hmr#readme",
   "dependencies": {
+    "color": "^0.11.1",
     "decca": "2.0.1",
     "deku-memoize": "^1.2.0",
     "es6-promise": "^3.1.2",

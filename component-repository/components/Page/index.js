@@ -1,14 +1,17 @@
 import { element } from 'decca'
 import _ from 'lodash';
+import color from 'color';
 
 const styles = {
   Page: {
-    cursor: 'pointer'
+    cursor: 'pointer',
+    padding: '4px 16px'
   },
 
   SelectedPage: {
     backgroundColor: '#cccccc',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    padding: '4px 16px'
   }
 };
 
