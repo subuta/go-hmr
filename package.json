@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "serve": "watchify sdk -d -t babelify -o public/js/bundle.sdk.js & go run main.go",
-    "build-component": "NODE_PATH=$NODE_PATH:client browserify client -d -t [ babelify ] -o public/js/bundle.sdk.js"
+    "build-component": "NODE_PATH=$NODE_PATH:client browserify client -d -t [ babelify ] -o public/js/bundle.components.js"
   },
   "repository": {
     "type": "git",
@@ -19,6 +19,7 @@
   "homepage": "https://github.com/subuta/go-hmr#readme",
   "dependencies": {
     "decca": "2.0.1",
+    "deku-memoize": "^1.2.0",
     "lodash": "^4.5.0",
     "redux": "^3.3.1",
     "redux-thunk": "^1.0.3",

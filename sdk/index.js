@@ -1,6 +1,6 @@
-import { dom, element } from 'decca'
-import DynamicScriptLoader from './components/DynamicScriptLoader';
+import rebuildScriptNode from './rebuildScriptNode';
 
+// subscribe for events
 var eventSource = new EventSource("/events")
 
 eventSource.onmessage = function (ev) {
@@ -10,6 +10,9 @@ eventSource.onmessage = function (ev) {
     location.reload();
   } else if (data === 'built') {
     console.log('component updated.');
+    const scriptUrl = `/js/bundle.components.js?_=${ev.lastEventId}`
+    // add script to dom.
+    rebuildScriptNode('#dynamic-script', scriptUrl)
   }
 };
 
@@ -20,8 +23,3 @@ eventSource.onopen = function (ev) {
 eventSource.onerror = function (ev) {
   console.log("readyState = " + ev.currentTarget.readyState)
 }
-
-// Create an app that can turn vnodes into real DOM elements
-var render = dom.createRenderer(document.querySelector('#dynamic-script'))
-
-render(<DynamicScriptLoader message="test"/>)
