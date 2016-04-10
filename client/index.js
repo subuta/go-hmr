@@ -34,6 +34,9 @@ eventSource.onmessage = function (ev) {
   if (data === 'built') {
     console.log('component updated.')
     loadComponentRepository(ev.lastEventId)
+  } else if (data === 'full-built') {
+    console.log('will full reload.')
+    location.reload();
   }
 };
 

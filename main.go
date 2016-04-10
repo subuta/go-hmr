@@ -49,9 +49,13 @@ func main() {
     for {
       event := <- watchChannel
       log.Println("modified file:", event.Path())
+      u1 := uuid.NewV4()
       if (strings.Contains(event.Path(), "bundle.component-repository.js")) {
-        u1 := uuid.NewV4()
         es.SendEventMessage("built", "message", fmt.Sprintf("%s", u1))
+      } else if (strings.Contains(event.Path(), "bundle.client.js")) {
+        es.SendEventMessage("full-built", "message", fmt.Sprintf("%s", u1))
+      } else if (strings.Contains(event.Path(), "bundle.example.js")) {
+        es.SendEventMessage("full-built", "message", fmt.Sprintf("%s", u1))
       }
     }
   }()

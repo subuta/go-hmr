@@ -13,12 +13,18 @@ var render = dom.createRenderer(document.querySelector('#view'), store.dispatch)
 const handleComponentRepositoryLoaded = function () {
   console.log('example/index.js [start]');
 
-  const { Counter } = window.componentRepository;
+  const { Counter, TwoPaneLayout } = window.componentRepository;
   const WCounter = CounterContainer(Counter);
 
   // retrieve latest app and render it.
   const update = function () {
-    render(<WCounter/>, store.getState())
+    const app = (
+      <TwoPaneLayout>
+        <h1>label</h1>
+        <WCounter/>
+      </TwoPaneLayout>
+    )
+    render(app, store.getState())
     console.log('example/index.js [update]');
   }
 
