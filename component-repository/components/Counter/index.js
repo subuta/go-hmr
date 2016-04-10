@@ -5,10 +5,10 @@ const Counter = {
   render: ({ props }) => {
     return (<div>
       <button onClick={props.onClick}>Increment</button>
-      <h2 style={{color: 'red'}}>{props.value}</h2>
+      <h3 style={{color: 'blue'}}>{props.value}</h3>
     </div>)
   }
-}
+};
 
 // Render the app tree
 export default Counter
