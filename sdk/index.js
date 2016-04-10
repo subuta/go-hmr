@@ -8,20 +8,24 @@ var buildEvent = new Event(BUILD_EVENT);
 // subscribe for events
 var eventSource = new EventSource("/events")
 
-const createBundleScripts = (uniqueId = '') => {
+const loadComponentRepository = (uniqueId = '') => {
+  console.log('loadComponentRepository [start]');
+
   const scriptUrl = `/js/bundle.component-repository.js?_=${uniqueId}`
   // add script to dom.
-  rebuildScriptNode('#dynamic-script', scriptUrl)
+  return rebuildScriptNode('#dynamic-script', scriptUrl).then((result) => {
+    // when fully loaded.
+    // trigger event for listener(client).
+    document.body.dispatchEvent(buildEvent)
+    console.log('loadComponentRepository [end]');
+  })
 }
 
 eventSource.onmessage = function (ev) {
   const data = ev.data;
   if (data === 'built') {
     console.log('component updated.')
-    createBundleScripts(ev.lastEventId)
-
-    // trigger event for listener(client).
-    document.body.dispatchEvent(buildEvent)
+    loadComponentRepository(ev.lastEventId)
   }
 };
 
@@ -36,4 +40,5 @@ eventSource.onerror = function (ev) {
 // fetch for first time rendering.
 // fetch('/build').then(response => response)
 
-createBundleScripts()
+// load once.
+loadComponentRepository()

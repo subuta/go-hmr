@@ -5,7 +5,7 @@ const Counter = {
   render: ({ props }) => {
     return (<div>
       <button onClick={props.onClick}>Increment</button>
-      <h3 style={{color: 'green'}}>{props.value}</h3>
+      <h1 style={{color: 'red'}}>{props.value}</h1>
     </div>)
   }
 }
