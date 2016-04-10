@@ -1,4 +1,6 @@
 import rebuildScriptNode from './rebuildScriptNode';
+require('es6-promise').polyfill();
+require('isomorphic-fetch');
 
 // subscribe for events
 var eventSource = new EventSource("/events")
@@ -23,3 +25,6 @@ eventSource.onopen = function (ev) {
 eventSource.onerror = function (ev) {
   console.log("readyState = " + ev.currentTarget.readyState)
 }
+
+// fetch for first time rendering.
+fetch('/build').then(response => response)

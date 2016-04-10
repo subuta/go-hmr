@@ -5,11 +5,12 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/standard"
 	"github.com/labstack/echo/middleware"
-  "github.com/fsnotify/fsnotify"
+  "github.com/rjeczalik/notify"
   "gopkg.in/antage/eventsource.v1"
   "github.com/satori/go.uuid"
 	"net/http"
   "os/exec"
+  "strings"
   "fmt"
   "log"
   "time"
@@ -40,31 +41,39 @@ func main() {
   es.SendRetryMessage(3 * time.Second)
 
   // for file watcher
-  watcher, err := fsnotify.NewWatcher()
-  if err != nil {
-    log.Fatal(err)
-  }
-  defer watcher.Close()
+  watchChannel := make(chan notify.EventInfo)
+  defer notify.Stop(watchChannel)
 
   log.Println("watch file changes")
 
   go func() {
     for {
-      select {
-      case event := <-watcher.Events:
-        log.Println("event:", event)
-        if event.Op&fsnotify.Create == fsnotify.Create {
-          log.Println("modified file:", event.Name)
-          u1 := uuid.NewV4()
-          es.SendEventMessage("sdk built", "message", fmt.Sprintf("%s", u1))
+      event := <- watchChannel
+      log.Println("modified file:", event.Path())
+        u1 := uuid.NewV4()
+      if (strings.Contains(event.Path(), "client")) {
+        // if client changed
+        out, err := exec.Command("npm", "run", "build-component").CombinedOutput()
+        if err != nil {
+          errorMessage := string(out)
+          log.Println(errorMessage)
         }
-      case err := <-watcher.Errors:
-        log.Println("error:", err)
+        es.SendEventMessage("built", "message", fmt.Sprintf("%s", u1))
+      } else if (strings.Contains(event.Path(), "sdk")) {
+        // if sdk changed
+        es.SendEventMessage("sdk built", "message", fmt.Sprintf("%s", u1))
       }
     }
   }()
 
-  err = watcher.Add("./public")
+  // watch sdk folder recursively
+  err := notify.Watch("./sdk/...", watchChannel, notify.All)
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  // watch client folder recursively
+  err = notify.Watch("./client/...", watchChannel, notify.All)
   if err != nil {
     log.Fatal(err)
   }

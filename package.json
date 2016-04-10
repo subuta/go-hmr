@@ -20,6 +20,8 @@
   "dependencies": {
     "decca": "2.0.1",
     "deku-memoize": "^1.2.0",
+    "es6-promise": "^3.1.2",
+    "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.5.0",
     "redux": "^3.3.1",
     "redux-thunk": "^1.0.3",
