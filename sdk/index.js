@@ -2,19 +2,26 @@ import rebuildScriptNode from './rebuildScriptNode';
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
 
+const BUILD_EVENT = 'build';
+var buildEvent = new Event(BUILD_EVENT);
+
 // subscribe for events
 var eventSource = new EventSource("/events")
 
+const createBundleScripts = (uniqueId = '') => {
+  const scriptUrl = `/js/bundle.component-repository.js?_=${uniqueId}`
+  // add script to dom.
+  rebuildScriptNode('#dynamic-script', scriptUrl)
+}
+
 eventSource.onmessage = function (ev) {
   const data = ev.data;
-  if (data === 'sdk built') {
-    console.log('sdk updated.');
-    location.reload();
-  } else if (data === 'built') {
-    console.log('component updated.');
-    const scriptUrl = `/js/bundle.components.js?_=${ev.lastEventId}`
-    // add script to dom.
-    rebuildScriptNode('#dynamic-script', scriptUrl)
+  if (data === 'built') {
+    console.log('component updated.')
+    createBundleScripts(ev.lastEventId)
+
+    // trigger event for listener(client).
+    document.body.dispatchEvent(buildEvent)
   }
 };
 
@@ -27,4 +34,6 @@ eventSource.onerror = function (ev) {
 }
 
 // fetch for first time rendering.
-fetch('/build').then(response => response)
+// fetch('/build').then(response => response)
+
+createBundleScripts()

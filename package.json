@@ -4,8 +4,10 @@
   "description": "(WIP) Go implementation using HMR",
   "main": "index.js",
   "scripts": {
-    "serve": "watchify sdk -d -t babelify -o public/js/bundle.sdk.js & go run main.go",
-    "build-component": "NODE_PATH=$NODE_PATH:client browserify client -d -t [ babelify ] -o public/js/bundle.components.js"
+    "serve": "go run main.go & watchify componentRepository -d -t babelify -o public/js/bundle.component-repository.js",
+    "build": "npm run build-client & npm run build-sdk",
+    "build-client": "NODE_PATH=$NODE_PATH:client browserify client -d -t babelify -o public/js/bundle.client.js",
+    "build-sdk": "browserify sdk -d -t babelify -o public/js/bundle.sdk.js"
   },
   "repository": {
     "type": "git",

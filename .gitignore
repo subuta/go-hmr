@@ -1,3 +1,5 @@
 bundle.js
 bundle.sdk.js
 bundle.components.js
+bundle.client.js
+bundle.component-repository.js
